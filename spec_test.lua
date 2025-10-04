@@ -43,6 +43,23 @@ describe("spec.lua", function()
         assert.True(spec.some "Test")
     end)
 
+    it("spec.all_of", function()
+        assert.False(spec.valid(spec.all_of(spec.string, spec.number), nil))
+        assert.True(spec.valid(spec.all_of(spec.table, spec.some), { 1, 2 }))
+        assert.True(spec.valid(
+            spec.all_of(spec.table, function(value)
+                return #value >= 2
+            end),
+            { 1, 2, 3 }
+        ))
+    end)
+
+    it("spec.any_of", function()
+        assert.False(spec.valid(spec.any_of(spec.string, spec.number), nil))
+        assert.True(spec.valid(spec.any_of(spec.table, spec.some), { 1, 2 }))
+        assert.True(spec.valid(spec.any_of(spec.number, spec.string, spec.table), { 1, 2 }))
+    end)
+
     it("spec.keys", function()
         local user_spec = spec.keys {
             name = spec.string,

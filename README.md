@@ -42,6 +42,26 @@ end
 
 spec.valid(my_predicate, instance_of_type) -- true if condition is valid
 
+-- compose multiple predicates
+local bool_or_user = spec.any_of(spec.boolean, user_spec)
+
+spec.valid(bool_or_user, true) -- true
+spec.valid(bool_or_user, { name = "Alice", age = 30 }) -- true
+spec.valid(bool_or_user, { name = "Bob" }) -- false
+
+local has_name = spec.keys {
+    name = spec.string,
+}
+
+local has_age = spec.keys {
+    age = spec.number,
+}
+
+-- same as the previous user_spec
+local is_user = spec.all_of(has_name, has_age)
+
+spec.valid(is_user, { name = "Alice", age = 30 })
+
 -- some useful helper functions...
 
 -- conform returns the value if it conforms to the spec

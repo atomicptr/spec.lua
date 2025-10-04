@@ -66,6 +66,52 @@ function M.some(value)
     return value ~= nil
 end
 
+---Tests if all of predicates are valid
+---@param ... fun(value: any): boolean
+---@return fun(value: any): boolean
+function M.all_of(...)
+    local predicates = { ... }
+
+    for _, pred in ipairs(predicates) do
+        if type(pred) ~= "function" then
+            error "Spec must be a function (e.g. spec.keys for tables)"
+        end
+    end
+
+    return function(value)
+        for _, pred in ipairs(predicates) do
+            if not pred(value) then
+                return false
+            end
+        end
+
+        return true
+    end
+end
+
+---Tests if any of predicates is valid
+---@param ... fun(value: any): boolean
+---@return fun(value: any): boolean
+function M.any_of(...)
+    local predicates = { ... }
+
+    for _, pred in ipairs(predicates) do
+        if type(pred) ~= "function" then
+            error "Spec must be a function (e.g. spec.keys for tables)"
+        end
+    end
+
+    return function(value)
+        for _, pred in ipairs(predicates) do
+            if pred(value) then
+                return true
+            end
+        end
+
+        return false
+    end
+end
+
 ---Test if table matches a shape
 ---@param spec_map table<string, fun(value: any): boolean>
 ---@return fun(value: any): boolean
