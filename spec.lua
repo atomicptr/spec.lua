@@ -62,7 +62,7 @@ end
 ---Tests if value exists
 ---@param value any
 ---@return boolean
-function M.some(value)
+function M.exists(value)
     return value ~= nil
 end
 
