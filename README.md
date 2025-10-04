@@ -77,6 +77,9 @@ spec.conform(user_spec, bob) -- returns nil
 
 -- assert that the spec is valid otherwise throw an error
 spec.assert(spec.string, "Hello, World")
+
+-- assert also returns the value if its valid so you can use this to check things passed into functions
+promote_user(spec.assert(user_spec, alice))
 ```
 
 ## License

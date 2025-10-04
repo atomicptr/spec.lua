@@ -228,5 +228,8 @@ describe("spec.lua", function()
         assert.has_error(function()
             spec.assert(spec.string, 1337)
         end)
+
+        local x = spec.assert(spec.number, 42)
+        assert.equal(42, x)
     end)
 end)

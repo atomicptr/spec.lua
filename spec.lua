@@ -159,10 +159,13 @@ function M.conform(spec, value)
 end
 
 ---Asserts that a spec is valid
----@param spec any
----@param value any
+---@generic T
+---@param spec fun(value: any): boolean
+---@param value T
+---@return T
 function M.assert(spec, value)
     assert(M.valid(spec, value))
+    return value
 end
 
 return M
