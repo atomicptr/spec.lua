@@ -47,6 +47,7 @@ describe("spec.lua", function()
         assert.True(spec.optional(spec.string) "Hello, World")
         assert.True(spec.optional(spec.string)(nil))
         assert.False(spec.optional(spec.string)(true))
+        assert.False(spec.optional(spec.string)(false))
     end)
 
     it("spec.all_of", function()

@@ -122,10 +122,11 @@ end
 ---@return fun(value: any): boolean
 function M.optional(spec)
     return function(value)
-        if value then
-            return spec(value)
+        -- if no value is specified return true!
+        if value == nil then
+            return true
         end
-        return true
+        return spec(value)
     end
 end
 
