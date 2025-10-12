@@ -133,11 +133,11 @@ describe("spec.lua", function()
 
         assert.has_error(function()
             spec.valid("not a function", "value")
-        end, "Spec must be a function (e.g. spec.keys for tables)")
+        end)
 
         assert.has_error(function()
             spec.valid({}, "value")
-        end, "Spec must be a function (e.g. spec.keys for tables)")
+        end)
     end)
 
     it("spec.keys nested", function()

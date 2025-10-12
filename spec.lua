@@ -22,6 +22,28 @@
 
 local M = {}
 
+---Internal functions to be overwritten when desired
+---@type table<string, function>
+M.fn = {}
+
+---Assert function
+---@type fun(assertion: boolean, message: string)
+M.fn.assert = function(assertion, message)
+    assert(assertion, message)
+end
+
+---Print error function
+---@type fun(reason: string)
+M.fn.error = function(reason)
+    error(reason)
+end
+
+---Pretty printer function
+---@type fun(object: any): string
+M.fn.pretty_print = function(object)
+    return tostring(object)
+end
+
 -- predicates
 
 ---Tests if value is a string
@@ -86,7 +108,15 @@ function M.all_of(...)
 
     for _, pred in ipairs(predicates) do
         if type(pred) ~= "function" then
-            error "Spec must be a function (e.g. spec.keys for tables)"
+            M.fn.error(
+                string.format(
+                    "spec.lua: Spec '%s' must be a function (e.g. spec.keys for tables)",
+                    M.fn.pretty_print(pred)
+                )
+            )
+            return function()
+                return false
+            end
         end
     end
 
@@ -109,7 +139,15 @@ function M.any_of(...)
 
     for _, pred in ipairs(predicates) do
         if type(pred) ~= "function" then
-            error "Spec must be a function (e.g. spec.keys for tables)"
+            M.fn.error(
+                string.format(
+                    "spec.lua: Spec '%s' must be a function (e.g. spec.keys for tables)",
+                    M.fn.pretty_print(pred)
+                )
+            )
+            return function()
+                return false
+            end
         end
     end
 
@@ -151,7 +189,10 @@ end
 ---@return boolean
 function M.valid(spec, value)
     if type(spec) ~= "function" then
-        error "Spec must be a function (e.g. spec.keys for tables)"
+        M.fn.error(
+            string.format("spec.lua: Spec '%s' must be a function (e.g. spec.keys for tables)", M.fn.pretty_print(spec))
+        )
+        return false
     end
 
     return spec(value)
@@ -176,7 +217,14 @@ end
 ---@param value T
 ---@return T
 function M.assert(spec, value)
-    assert(M.valid(spec, value))
+    M.fn.assert(
+        M.valid(spec, value),
+        string.format(
+            "spec.lua: Assertion failed because '%s' doesn't conform to spec '%s'",
+            M.fn.pretty_print(value),
+            M.fn.pretty_print(spec)
+        )
+    )
     return value
 end
 
