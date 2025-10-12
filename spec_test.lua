@@ -105,6 +105,15 @@ describe("spec.lua", function()
         assert.False(user_spec "not a table")
         assert.False(user_spec(nil))
         assert.False(user_spec {})
+
+        local num_spec = spec.keys {
+            a = spec.number,
+            b = spec.optional(spec.number),
+        }
+
+        assert.True(num_spec { a = 1337 })
+        assert.True(num_spec { a = 1337, b = 42 })
+        assert.False(num_spec { a = 1337, b = "test" })
     end)
 
     it("spec.keys with extra fields", function()

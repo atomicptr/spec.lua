@@ -22,27 +22,56 @@
 
 local M = {}
 
+---Enable/Disable spec.lua assertions
+M.assertions_enabled = true
+
 ---Internal functions to be overwritten when desired
 ---@type table<string, function>
-M.fn = {}
+M.fn = {
+    ---Assert function
+    ---@type fun(assertion: boolean, message: string)
+    assert = function(assertion, message)
+        assert(assertion, string.format("%s\n%s", message, debug.traceback()))
+    end,
 
----Assert function
----@type fun(assertion: boolean, message: string)
-M.fn.assert = function(assertion, message)
-    assert(assertion, message)
-end
+    ---Print error function
+    ---@type fun(reason: string)
+    error = function(reason)
+        error(string.format("%s\n%s", reason, debug.traceback()))
+    end,
 
----Print error function
----@type fun(reason: string)
-M.fn.error = function(reason)
-    error(reason)
-end
+    ---Converts table to simple string representation
+    ---@param t table
+    ---@param indent integer|nil
+    ---@return string
+    table_to_string = function(t, indent)
+        indent = indent or 0
+        local str = string.rep("  ", indent) .. "{\n"
+        for k, v in pairs(t) do
+            local key_str = type(k) == "string" and '"' .. k .. '"' or "[" .. tostring(k) .. "]"
+            if type(v) == "table" then
+                str = str .. string.rep("  ", indent + 1) .. key_str .. " = " .. M.fn.table_to_string(v, indent + 1)
+            else
+                str = str .. string.rep("  ", indent + 1) .. key_str .. " = " .. tostring(v) .. ",\n"
+            end
+        end
+        str = str .. string.rep("  ", indent) .. "}"
+        return str
+    end,
 
----Pretty printer function
----@type fun(object: any): string
-M.fn.pretty_print = function(object)
-    return tostring(object)
-end
+    ---Pretty printer function
+    ---@type fun(object: any): string
+    pretty_print = function(object)
+        if type(object) == "function" then
+            local info = debug.getinfo(object, "nSl")
+            return string.format("fn %s(...) defined at %s:%d", info.name or "anonymous", info.source, info.linedefined)
+        elseif type(object) == "table" then
+            return M.fn.table_to_string(object)
+        end
+
+        return tostring(object)
+    end,
+}
 
 -- predicates
 
@@ -174,7 +203,18 @@ function M.keys(spec_map)
         for key, sub_spec in pairs(spec_map) do
             local val = value[key]
 
-            if val == nil or not (type(sub_spec) == "function" and sub_spec(val)) then
+            if type(sub_spec) ~= "function" then
+                M.fn.error(
+                    string.format(
+                        "spec.lua: Spec '%s' for key '%s' must be a function (e.g. spec.keys for tables)",
+                        M.fn.pretty_print(sub_spec),
+                        M.fn.pretty_print(key)
+                    )
+                )
+                return false
+            end
+
+            if not sub_spec(val) then
                 return false
             end
         end
@@ -217,14 +257,16 @@ end
 ---@param value T
 ---@return T
 function M.assert(spec, value)
-    M.fn.assert(
-        M.valid(spec, value),
-        string.format(
-            "spec.lua: Assertion failed because '%s' doesn't conform to spec '%s'",
-            M.fn.pretty_print(value),
-            M.fn.pretty_print(spec)
+    if M.assertions_enabled then
+        M.fn.assert(
+            M.valid(spec, value),
+            string.format(
+                "spec.lua: Assertion failed because '%s' doesn't conform to spec '%s'",
+                M.fn.pretty_print(value),
+                M.fn.pretty_print(spec)
+            )
         )
-    )
+    end
     return value
 end
 
