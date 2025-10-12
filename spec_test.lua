@@ -43,6 +43,12 @@ describe("spec.lua", function()
         assert.True(spec.exists "Test")
     end)
 
+    it("spec.optional", function()
+        assert.True(spec.optional(spec.string) "Hello, World")
+        assert.True(spec.optional(spec.string)(nil))
+        assert.False(spec.optional(spec.string)(true))
+    end)
+
     it("spec.all_of", function()
         assert.False(spec.valid(spec.all_of(spec.string, spec.number), nil))
         assert.True(spec.valid(spec.all_of(spec.table, spec.some), { 1, 2 }))

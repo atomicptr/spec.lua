@@ -66,6 +66,18 @@ function M.exists(value)
     return value ~= nil
 end
 
+---Tests if value is supplied that it matches the spec
+---@param spec fun(value: any): boolean
+---@return fun(value: any): boolean
+function M.optional(spec)
+    return function(value)
+        if value then
+            return spec(value)
+        end
+        return true
+    end
+end
+
 ---Tests if all of predicates are valid
 ---@param ... fun(value: any): boolean
 ---@return fun(value: any): boolean
