@@ -121,12 +121,43 @@ end
 ---@param spec fun(value: any): boolean
 ---@return fun(value: any): boolean
 function M.optional(spec)
+    if type(spec) ~= "function" then
+        M.fn.error(
+            string.format("spec.lua: Spec '%s' must be a function (e.g. spec.keys for tables)", M.fn.pretty_print(spec))
+        )
+    end
+
     return function(value)
         -- if no value is specified return true!
         if value == nil then
             return true
         end
         return spec(value)
+    end
+end
+
+---Tests if the value is a list of `spec`
+---@param spec fun(value: any): boolean
+---@return fun(value: any): boolean
+function M.list(spec)
+    if type(spec) ~= "function" then
+        M.fn.error(
+            string.format("spec.lua: Spec '%s' must be a function (e.g. spec.keys for tables)", M.fn.pretty_print(spec))
+        )
+    end
+
+    return function(value)
+        if type(value) ~= "table" then
+            return false
+        end
+
+        for _, item in ipairs(value) do
+            if not spec(item) then
+                return false
+            end
+        end
+
+        return true
     end
 end
 

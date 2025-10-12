@@ -50,6 +50,13 @@ describe("spec.lua", function()
         assert.False(spec.optional(spec.string)(false))
     end)
 
+    it("spec.list", function()
+        assert.True(spec.list(spec.number) { 1, 2, 3, 4, 5, 6 })
+        assert.False(spec.list(spec.number) { 1, 2, 3, 4, "Test", 6 })
+        assert.False(spec.list(spec.number)(nil))
+        assert.False(spec.list(spec.number) "Test")
+    end)
+
     it("spec.all_of", function()
         assert.False(spec.valid(spec.all_of(spec.string, spec.number), nil))
         assert.True(spec.valid(spec.all_of(spec.table, spec.some), { 1, 2 }))
